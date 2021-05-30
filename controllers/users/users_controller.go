@@ -11,11 +11,16 @@ import (
 	"github.com/harshasavanth/users-api/services"
 	"github.com/harshasavanth/utils-go/crypto_utils"
 	"net/http"
+	"os"
 	"time"
 )
 
 var (
 	UsersController usersControllerInterface = &usersController{}
+)
+
+const (
+	signedKey = "signedKey"
 )
 
 type usersControllerInterface interface {
@@ -118,7 +123,7 @@ func (c *usersController) VerifyEmail(ctx *gin.Context) {
 }
 
 func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.HandlerFunc {
-	var signingKey = []byte("secret")
+	var signingKey = []byte(os.Getenv(signedKey))
 	return func(c *gin.Context) {
 		if c.GetHeader("Token") != "" {
 			token, err := jwt.Parse(c.GetHeader("Token"), func(token *jwt.Token) (interface{}, error) {

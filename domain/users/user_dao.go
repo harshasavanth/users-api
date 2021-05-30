@@ -57,7 +57,6 @@ func (user *User) Get() *rest_errors.RestErr {
 func (user *User) Update() *rest_errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryUpdateUser)
 	if err != nil {
-		logger.Error("error when trying to prepare update user statement ", err)
 		return rest_errors.NewInternalServerError("database error")
 	}
 	defer stmt.Close()

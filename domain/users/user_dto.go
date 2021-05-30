@@ -4,14 +4,20 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"github.com/harshasavanth/bookstore_users-api/logger"
 	"github.com/harshasavanth/utils-go/crypto_utils"
 	"github.com/harshasavanth/utils-go/rest_errors"
 	"net/smtp"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 	"unicode"
+)
+
+const (
+	signedKey   = "signedKey"
+	senderEmail = "senderEmail"
+	password    = "password"
 )
 
 type User struct {
@@ -117,8 +123,8 @@ func GenerateUuid() string {
 func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 	hostUrl := "smtp.gmail.com"
 	hostPort := "587"
-	emailSender := "harshasavanth123@gmail.com"
-	password := "htcdesire"
+	emailSender := os.Getenv(senderEmail)
+	password := os.Getenv(password)
 	emailReceiever := user.Email
 
 	emailAuth := smtp.PlainAuth(
@@ -140,12 +146,7 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 		emailSender,
 		[]string{emailReceiever},
 		msg)
-	logger.Info(emailSender)
-	logger.Info(emailReceiever)
-	logger.Info(hostUrl)
-	logger.Info(hostPort)
 	if err != nil {
-		logger.Info(err.Error())
 		return rest_errors.NewInvalidInputError("invalid email")
 	}
 	return nil
@@ -153,14 +154,14 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 }
 
 func (user *User) GenerateJWT() (string, *rest_errors.RestErr) {
-	var signedKey = []byte("secret")
+	var signedKey = []byte(os.Getenv(signedKey))
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
 
 	claims["authorized"] = true
 	claims["user"] = user.Id
-	claims["expires"] = time.Now().Add(time.Minute * 1).Unix()
+	claims["expires"] = time.Now().Add(time.Minute * 30).Unix()
 
 	tokenString, err := token.SignedString(signedKey)
 	if err != nil {
