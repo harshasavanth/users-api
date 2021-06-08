@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/harshasavanth/users-api/crypto_utils"
-	"github.com/harshasavanth/users-api/rest_errors"
+	"github.com/harshasavanth/users-api/src/crypto_utils"
+	"github.com/harshasavanth/users-api/src/rest_errors"
 
-	"github.com/harshasavanth/users-api/domain/users"
-	"github.com/harshasavanth/users-api/services"
+	"github.com/harshasavanth/users-api/src/domain/users"
+	"github.com/harshasavanth/users-api/src/services"
 
 	"net/http"
 	"os"

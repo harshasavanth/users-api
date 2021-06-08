@@ -12,8 +12,8 @@ import (
 const (
 	mysql_users_username = "root"
 	mysql_users_password = "usersroot"
-	mysql_users_host     = "aaadxba6umz3h1.c3o0nyynmexn.ap-south-1.rds.amazonaws.com:3306"
-	mysql_users_schema   = "ebdb"
+	mysql_users_host     = "database-1.c3o0nyynmexn.ap-south-1.rds.amazonaws.com:3306"
+	mysql_users_schema   = "users_db"
 )
 
 var (
@@ -33,7 +33,7 @@ func init() {
 		panic(err)
 	}
 
-	query := "CREATE TABLE IF NOT EXISTS `ebdb`.`users` ( `id` VARCHAR(255) NOT NULL,  `first_name` VARCHAR(45) NULL,  `last_name` VARCHAR(45) NULL," +
+	query := "CREATE TABLE IF NOT EXISTS `users_db`.`users` ( `id` VARCHAR(255) NOT NULL,  `first_name` VARCHAR(45) NULL,  `last_name` VARCHAR(45) NULL," +
 		"  `over_eighteen` CHAR(1) NOT NULL,  `email` VARCHAR(100) NOT NULL, `password` VARCHAR(45) NOT NULL,  `account_used_to_login` VARCHAR(45) NULL," +
 		"  `acknowledgement` CHAR(1) NOT NULL,  `email_verification` CHAR(1) NULL,  `previous_login` VARCHAR(45) NULL,  `previous_password1` VARCHAR(45) NULL," +
 		" `previous_password2` VARCHAR(45) NULL,  `previous_password3` VARCHAR(45) NULL,  `date_created` VARCHAR(45) NULL, `access_token` VARCHAR(250) NULL, PRIMARY KEY (`id`),  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE);"

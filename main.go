@@ -1,6 +1,6 @@
 package main
 
-import "github.com/harshasavanth/users-api/app"
+import "github.com/harshasavanth/users-api/src/app"
 
 func main() {
 

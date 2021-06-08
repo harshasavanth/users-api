@@ -1,10 +1,10 @@
 package services
 
 import (
-	"github.com/harshasavanth/users-api/crypto_utils"
-	"github.com/harshasavanth/users-api/date_utils"
-	"github.com/harshasavanth/users-api/domain/users"
-	"github.com/harshasavanth/users-api/rest_errors"
+	"github.com/harshasavanth/users-api/src/crypto_utils"
+	"github.com/harshasavanth/users-api/src/date_utils"
+	"github.com/harshasavanth/users-api/src/domain/users"
+	"github.com/harshasavanth/users-api/src/rest_errors"
 )
 
 var (
