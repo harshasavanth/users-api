@@ -162,7 +162,7 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 }
 
 func (user *User) GenerateJWT() (string, *rest_errors.RestErr) {
-	var signedKey = []byte(os.Getenv(signedKey))
+	var signedKey = []byte(signedKey)
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)

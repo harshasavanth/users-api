@@ -12,7 +12,6 @@ import (
 	"github.com/harshasavanth/users-api/services"
 
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -125,7 +124,7 @@ func (c *usersController) VerifyEmail(ctx *gin.Context) {
 }
 
 func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.HandlerFunc {
-	var signingKey = []byte(os.Getenv(signedKey))
+	var signingKey = []byte(signedKey)
 	return func(c *gin.Context) {
 		if c.GetHeader("Token") != "" {
 			token, err := jwt.Parse(c.GetHeader("Token"), func(token *jwt.Token) (interface{}, error) {
