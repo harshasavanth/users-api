@@ -1,10 +1,10 @@
 package services
 
 import (
+	"github.com/harshasavanth/users-api/crypto_utils"
+	"github.com/harshasavanth/users-api/date_utils"
 	"github.com/harshasavanth/users-api/domain/users"
-	"github.com/harshasavanth/utils-go/crypto_utils"
-	"github.com/harshasavanth/utils-go/date_utils"
-	"github.com/harshasavanth/utils-go/rest_errors"
+	"github.com/harshasavanth/users-api/rest_errors"
 )
 
 var (
@@ -23,7 +23,7 @@ type usersServiceInterface interface {
 }
 
 func (s *usersService) CreateUser(user users.User) (*users.User, *rest_errors.RestErr) {
-	if err := user.Validate(); err != nil {
+	if err := user.RegisterValidate(); err != nil {
 		return nil, err
 	}
 	user.DateCreated = date_utils.GetNowDBFormat()
@@ -59,10 +59,10 @@ func (s *usersService) UpdateUser(user users.User) (*users.User, *rest_errors.Re
 
 	current.FirstName = user.FirstName
 	current.LastName = user.LastName
-	current.Age = user.Age
+	current.OverEighteen = user.OverEighteen
 	current.Email = user.Email
 	current.Password = user.Password
-	if err := current.Validate(); err != nil {
+	if err := current.RegisterValidate(); err != nil {
 		return nil, err
 	}
 	if err := current.Update(); err != nil {

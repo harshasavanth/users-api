@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/harshasavanth/bookstore_users-api/logger"
-	"github.com/harshasavanth/bookstore_utils-go/rest_errors"
+	"github.com/harshasavanth/users-api/crypto_utils"
+	"github.com/harshasavanth/users-api/rest_errors"
+
 	"github.com/harshasavanth/users-api/domain/users"
 	"github.com/harshasavanth/users-api/services"
-	"github.com/harshasavanth/utils-go/crypto_utils"
+
 	"net/http"
 	"os"
 	"time"
@@ -38,8 +39,9 @@ type usersController struct {
 
 func (c *usersController) Create(ctx *gin.Context) {
 	var user users.User
+
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		restErr := rest_errors.NewBadRequestError("invalid JSON body")
+		restErr := rest_errors.NewBadRequestError("invalid JSON bodysfds")
 		ctx.JSON(restErr.Status, restErr)
 		return
 	}
@@ -174,12 +176,8 @@ func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.Handle
 
 func (c *usersController) Display(ctx *gin.Context, id string, user *users.User) {
 	if ctx.GetHeader("ID") == id {
-		logger.Info(id)
-		logger.Info(ctx.GetHeader("ID"))
 		ctx.JSON(http.StatusOK, user)
 	} else {
-		logger.Info(id)
-		logger.Info(ctx.GetHeader("ID"))
 		ctx.JSON(http.StatusNotImplemented, "not authorized")
 	}
 

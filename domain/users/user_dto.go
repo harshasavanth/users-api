@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
-	"github.com/harshasavanth/utils-go/crypto_utils"
-	"github.com/harshasavanth/utils-go/rest_errors"
+	"github.com/harshasavanth/users-api/crypto_utils"
+	"github.com/harshasavanth/users-api/rest_errors"
+
 	"net/smtp"
 	"os"
 	"regexp"
@@ -15,16 +16,16 @@ import (
 )
 
 const (
-	signedKey   = "signedKey"
-	senderEmail = "senderEmail"
-	password    = "password"
+	signedKey   = "secret"
+	senderEmail = "harshasavanth123@gmail.com"
+	password    = "htcdesire"
 )
 
 type User struct {
 	Id                 string    `json:"id"`
 	FirstName          string    `json:"first_name"`
 	LastName           string    `json:"last_name"`
-	Age                int       `json:"age"`
+	OverEighteen       bool      `json:"over_eighteen"`
 	Email              string    `json:"email"`
 	Password           string    `json:"password"`
 	ProfileImage       string    `json:"profile_image"`
@@ -105,12 +106,18 @@ func (user *User) IsValidPassword() *rest_errors.RestErr {
 	return nil
 }
 
-func (user *User) Validate() *rest_errors.RestErr {
+func (user *User) RegisterValidate() *rest_errors.RestErr {
 	if err := user.IsValidEmail(); err != nil {
 		return err
 	}
 	if err := user.IsValidPassword(); err != nil {
 		return err
+	}
+	if user.Acknowledgement == false {
+		return rest_errors.NewInvalidInputError("Please acknowledge terms")
+	}
+	if user.OverEighteen == false {
+		return rest_errors.NewInvalidInputError("Must be over eighteen years")
 	}
 	return nil
 }
@@ -123,8 +130,8 @@ func GenerateUuid() string {
 func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 	hostUrl := "smtp.gmail.com"
 	hostPort := "587"
-	emailSender := os.Getenv(senderEmail)
-	password := os.Getenv(password)
+	emailSender := senderEmail
+	password := password
 	emailReceiever := user.Email
 
 	emailAuth := smtp.PlainAuth(
@@ -146,6 +153,7 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 		emailSender,
 		[]string{emailReceiever},
 		msg)
+
 	if err != nil {
 		return rest_errors.NewInvalidInputError("invalid email")
 	}
