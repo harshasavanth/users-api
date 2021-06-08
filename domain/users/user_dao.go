@@ -1,8 +1,8 @@
 package users
 
 import (
-	"github.com/harshasavanth/users-api/src/datasources/mysql/users_db"
-	"github.com/harshasavanth/users-api/src/rest_errors"
+	"github.com/harshasavanth/users-api/datasources/mysql/users_db"
+	"github.com/harshasavanth/users-api/rest_errors"
 )
 
 const (
