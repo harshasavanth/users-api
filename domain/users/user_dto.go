@@ -145,7 +145,7 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 		return enEerr
 	}
 	msg := []byte("To: " + emailReceiever + "\r\n" +
-		"Subject: " + "Hello" + "\r\n" + "Please click below link to verify\nhttp://localhost:8080/users/verifyemail/" + token)
+		"Subject: " + "Hello" + "\r\n" + "Please click below link to verify\nhttp://localhost:" + os.Getenv("PORT") + "/users/verifyemail/" + token)
 
 	err := smtp.SendMail(
 		hostUrl+":"+hostPort,
