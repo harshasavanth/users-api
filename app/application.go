@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 var (
@@ -11,5 +12,5 @@ var (
 func StartApplication() {
 	mapUrls()
 	//logger.Info("about to start the application...")
-	router.Run(":")
+	router.Run(":" + os.Getenv("PORT"))
 }
