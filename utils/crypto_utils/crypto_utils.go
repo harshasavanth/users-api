@@ -7,7 +7,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"github.com/harshasavanth/users-api/rest_errors"
+	"github.com/harshasavanth/users-api/utils/rest_errors"
 
 	"io"
 )

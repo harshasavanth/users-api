@@ -2,7 +2,7 @@ package users
 
 import (
 	"github.com/harshasavanth/users-api/datasources/mysql/users_db"
-	"github.com/harshasavanth/users-api/rest_errors"
+	"github.com/harshasavanth/users-api/utils/rest_errors"
 )
 
 const (

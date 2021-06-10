@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"github.com/harshasavanth/users-api/crypto_utils"
-	"github.com/harshasavanth/users-api/rest_errors"
+	"github.com/harshasavanth/users-api/utils/aws"
+	"github.com/harshasavanth/users-api/utils/crypto_utils"
+	"github.com/harshasavanth/users-api/utils/rest_errors"
 	"os"
 
 	"github.com/harshasavanth/users-api/domain/users"
@@ -28,6 +29,7 @@ type usersControllerInterface interface {
 	GetByEmail(*gin.Context)
 	VerifyEmail(*gin.Context)
 	IsAuthorized(endpoint func(ctx *gin.Context)) gin.HandlerFunc
+	ProfilePicUpload(ctx *gin.Context)
 }
 
 type usersController struct {
@@ -52,6 +54,7 @@ func (c *usersController) Create(ctx *gin.Context) {
 
 func (c *usersController) Get(ctx *gin.Context) {
 	userId := ctx.Param("user_id")
+
 	user, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
 		ctx.JSON(getErr.Status, getErr)
@@ -59,6 +62,18 @@ func (c *usersController) Get(ctx *gin.Context) {
 	}
 	c.Display(ctx, userId, user)
 }
+
+func (c *usersController) ProfilePicUpload(ctx *gin.Context) {
+	path := ctx.Param("path")
+	userId := ctx.Param("user_id")
+	getErr := aws.Upload(path, userId)
+	if getErr != nil {
+		ctx.JSON(getErr.Status, getErr)
+		return
+	}
+	ctx.JSON(http.StatusOK, "Image uploaded")
+}
+
 func (c *usersController) GetByEmail(ctx *gin.Context) {
 	//if err := oauth.AuthenticateRequest(c.Request); err != nil {
 	//	c.JSON(err.Status, err)

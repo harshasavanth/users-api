@@ -14,5 +14,5 @@ func mapUrls() {
 	router.DELETE("/delete/:user_id", users.UsersController.IsAuthorized(users.UsersController.Delete))
 	router.GET("/users/getbyemail/:email", users.UsersController.GetByEmail)
 	router.GET("/users/verifyemail/:id", users.UsersController.VerifyEmail)
-
+	router.POST("uploadpic/:user_id/:path", users.UsersController.IsAuthorized(users.UsersController.ProfilePicUpload))
 }
