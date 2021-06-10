@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
+	"github.com/harshasavanth/bookstore_users-api/logger"
 	"github.com/harshasavanth/users-api/crypto_utils"
 	"github.com/harshasavanth/users-api/rest_errors"
-
-	"net/smtp"
-	"os"
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"regexp"
 	"strings"
 	"time"
@@ -128,35 +128,51 @@ func GenerateUuid() string {
 }
 
 func (user *User) SendVerificationEmail() *rest_errors.RestErr {
-	hostUrl := "smtp.gmail.com"
-	hostPort := "587"
-	emailSender := senderEmail
-	password := password
-	emailReceiever := user.Email
-
-	emailAuth := smtp.PlainAuth(
-		"",
-		emailSender,
-		password,
-		hostUrl,
-	)
 	token, enEerr := crypto_utils.Encrypt(user.Id)
 	if enEerr != nil {
 		return enEerr
 	}
-	msg := []byte("To: " + emailReceiever + "\r\n" +
-		"Subject: " + "Hello" + "\r\n" + "Please click below link to verify\nhttp://localhost:" + os.Getenv("PORT") + "/users/verifyemail/" + token)
-
-	err := smtp.SendMail(
-		hostUrl+":"+hostPort,
-		emailAuth,
-		emailSender,
-		[]string{emailReceiever},
-		msg)
-
+	from := mail.NewEmail("harsha", "harshasavanth123@gmail.com")
+	to := mail.NewEmail("savanth", user.Email)
+	subject := "verification"
+	plainText := "Please click below link to verify\nhttps://fast-bastion-03217.herokuapp.com/users/verifyemail/" + token
+	apikey := "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"
+	client := sendgrid.NewSendClient(apikey)
+	//hostUrl := "smtp.gmail.com"
+	//hostPort := "587"
+	//emailSender := senderEmail
+	//password := password
+	//emailReceiever := user.Email
+	message := mail.NewSingleEmail(from, subject, to, plainText, "")
+	response, err := client.Send(message)
 	if err != nil {
-		return rest_errors.NewInvalidInputError("invalid email")
+		logger.Info(err.Error())
 	}
+	logger.Info(response.Body)
+	logger.Info(fmt.Sprintf("%d", response.StatusCode))
+	logger.Info("sent")
+
+	//emailAuth := smtp.PlainAuth(
+	//	"",
+	//	emailSender,
+	//	password,
+	//	hostUrl,
+	//)
+	//logger.Info("authorized")
+	//msg := []byte("To: " + emailReceiever + "\r\n" +
+	//	"Subject: " + "Hello" + "\r\n" + "Please click below link to verify\nhttps://fast-bastion-03217.herokuapp.com/users/verifyemail/" + token)
+	//
+	//err = smtp.SendMail(
+	//	hostUrl+":"+hostPort,
+	//	emailAuth,
+	//	emailSender,
+	//	[]string{emailReceiever},
+	//	msg)
+	//logger.Info("sent")
+	//if err != nil {
+	//	return rest_errors.NewInvalidInputError("invalid email")
+	//}
+	//logger.Info("sent")
 	return nil
 
 }
