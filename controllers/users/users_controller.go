@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshasavanth/users-api/crypto_utils"
 	"github.com/harshasavanth/users-api/rest_errors"
+	"os"
 
 	"github.com/harshasavanth/users-api/domain/users"
 	"github.com/harshasavanth/users-api/services"
@@ -17,10 +18,6 @@ import (
 
 var (
 	UsersController usersControllerInterface = &usersController{}
-)
-
-const (
-	signedKey = "signedKey"
 )
 
 type usersControllerInterface interface {
@@ -124,7 +121,7 @@ func (c *usersController) VerifyEmail(ctx *gin.Context) {
 }
 
 func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.HandlerFunc {
-	var signingKey = []byte(signedKey)
+	var signingKey = []byte(os.Getenv("signedKey"))
 	return func(c *gin.Context) {
 		if c.GetHeader("Token") != "" {
 			token, err := jwt.Parse(c.GetHeader("Token"), func(token *jwt.Token) (interface{}, error) {

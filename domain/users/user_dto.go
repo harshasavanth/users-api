@@ -9,16 +9,11 @@ import (
 	"github.com/harshasavanth/users-api/rest_errors"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 	"unicode"
-)
-
-const (
-	signedKey   = "secret"
-	senderEmail = "harshasavanth123@gmail.com"
-	password    = "htcdesire"
 )
 
 type User struct {
@@ -132,12 +127,11 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 	if enEerr != nil {
 		return enEerr
 	}
-	from := mail.NewEmail("harsha", "harshasavanth123@gmail.com")
+	from := mail.NewEmail("harsha", os.Getenv("senderEmail"))
 	to := mail.NewEmail("savanth", user.Email)
 	subject := "verification"
 	plainText := "Please click below link to verify\nhttps://fast-bastion-03217.herokuapp.com/users/verifyemail/" + token
-	apikey := "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"
-	client := sendgrid.NewSendClient(apikey)
+	client := sendgrid.NewSendClient(os.Getenv("sgapikey"))
 	//hostUrl := "smtp.gmail.com"
 	//hostPort := "587"
 	//emailSender := senderEmail
@@ -178,7 +172,7 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 }
 
 func (user *User) GenerateJWT() (string, *rest_errors.RestErr) {
-	var signedKey = []byte(signedKey)
+	var signedKey = []byte(os.Getenv("signedKey"))
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
