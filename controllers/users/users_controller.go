@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/harshasavanth/bookstore_users-api/logger"
 	"github.com/harshasavanth/users-api/utils/aws"
 	"github.com/harshasavanth/users-api/utils/crypto_utils"
 	"github.com/harshasavanth/users-api/utils/rest_errors"
+	"log"
 	"os"
 
 	"github.com/harshasavanth/users-api/domain/users"
@@ -64,14 +66,28 @@ func (c *usersController) Get(ctx *gin.Context) {
 }
 
 func (c *usersController) ProfilePicUpload(ctx *gin.Context) {
-	path := ctx.Param("path")
-	userId := ctx.Param("user_id")
-	getErr := aws.Upload(path, userId)
+	fileHeader, _ := ctx.FormFile("path")
+	file, err := fileHeader.Open()
+	if err != nil {
+		log.Println(err)
+
+		return
+	}
+	userid := ctx.GetHeader("ID")
+	logger.Info(userid)
+	path, restErr := aws.Upload(file, fileHeader, userid)
+	if err != nil {
+		ctx.JSON(restErr.Status, restErr)
+		return
+	}
+
+	user, getErr := services.UsersService.UpdateProfilePic(userid, path)
 	if getErr != nil {
 		ctx.JSON(getErr.Status, getErr)
 		return
 	}
-	ctx.JSON(http.StatusOK, "Image uploaded")
+	ctx.JSON(http.StatusOK, user)
+
 }
 
 func (c *usersController) GetByEmail(ctx *gin.Context) {

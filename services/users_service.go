@@ -15,9 +15,10 @@ type usersService struct {
 }
 type usersServiceInterface interface {
 	CreateUser(users.User) (*users.User, *rest_errors.RestErr)
-	GetUser(userId string) (*users.User, *rest_errors.RestErr)
+	GetUser(string) (*users.User, *rest_errors.RestErr)
 	GetUserByEmail(string) (*users.User, *rest_errors.RestErr)
-	UpdateUser(user users.User) (*users.User, *rest_errors.RestErr)
+	UpdateUser(users.User) (*users.User, *rest_errors.RestErr)
+	UpdateProfilePic(string, string) (*users.User, *rest_errors.RestErr)
 	DeleteUser(string) *rest_errors.RestErr
 	VerifyEmail(users.User) (*users.User, *rest_errors.RestErr)
 }
@@ -66,6 +67,19 @@ func (s *usersService) UpdateUser(user users.User) (*users.User, *rest_errors.Re
 		return nil, err
 	}
 	if err := current.Update(); err != nil {
+		return nil, err
+	}
+	return current, nil
+}
+
+func (s *usersService) UpdateProfilePic(userId string, path string) (*users.User, *rest_errors.RestErr) {
+	current := &users.User{Id: userId}
+	if err := current.Get(); err != nil {
+		return nil, err
+	}
+
+	current.ProfileImage = path
+	if err := current.UpdateProfilePic(); err != nil {
 		return nil, err
 	}
 	return current, nil
