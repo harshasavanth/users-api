@@ -6,17 +6,16 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"github.com/harshasavanth/bookstore_users-api/logger"
+	"github.com/harshasavanth/users-api/domain/users"
+	"github.com/harshasavanth/users-api/services"
 	"github.com/harshasavanth/users-api/utils/aws"
 	"github.com/harshasavanth/users-api/utils/crypto_utils"
 	"github.com/harshasavanth/users-api/utils/rest_errors"
 	"log"
 	"os"
-
-	"github.com/harshasavanth/users-api/domain/users"
-	"github.com/harshasavanth/users-api/services"
+	"time"
 
 	"net/http"
-	"time"
 )
 
 var (
@@ -122,15 +121,14 @@ func (c *usersController) Update(ctx *gin.Context) {
 
 func (c *usersController) Delete(ctx *gin.Context) {
 	userId := ctx.Param("user_id")
-	if err := services.UsersService.DeleteUser(userId); err != nil {
-		ctx.JSON(err.Status, err)
-	}
 	if ctx.GetHeader("ID") == userId {
+		if err := services.UsersService.DeleteUser(userId); err != nil {
+			ctx.JSON(err.Status, err)
+		}
 		ctx.JSON(http.StatusOK, map[string]string{"status": "deleted"})
 	} else {
-		ctx.JSON(http.StatusNotImplemented, "not authorized")
+		ctx.JSON(http.StatusNotImplemented, "you cannot delete other users")
 	}
-
 }
 
 func (c *usersController) VerifyEmail(ctx *gin.Context) {
