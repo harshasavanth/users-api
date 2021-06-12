@@ -35,7 +35,6 @@ func (s *usersService) CreateUser(user users.User) (*users.User, *rest_errors.Re
 	if err := user.RegisterValidate(); err != nil {
 		return nil, err
 	}
-	user.ProfileImage = "  "
 	user.DateCreated = date_utils.GetNowDBFormat()
 	user.Password = crypto_utils.GetMd5(user.Password)
 

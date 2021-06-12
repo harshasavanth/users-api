@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	queryInsertUser = "INSERT INTO users (id, first_name, last_name, over_eighteen, email, password, account_used_to_login, acknowledgement, email_verification," +
-		"previous_login, previous_password1, previous_password2, previous_password3, date_created,access_token) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+	queryInsertUser = "INSERT INTO users (id, first_name, last_name, over_eighteen, email, password, profile_image, account_used_to_login, acknowledgement, email_verification," +
+		"previous_login, previous_password1, previous_password2, previous_password3, date_created,access_token) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
 	queryGetUser = "SELECT id, first_name, last_name, over_eighteen, email, password, profile_image, account_used_to_login, acknowledgement, " +
 		"email_verification, previous_login, previous_password1, previous_password2, previous_password3, date_created ,access_token FROM users WHERE id = ?;"
 	queryUpdateUser = "UPDATE users SET id=?, first_name=?, last_name=?, over_eighteen=?, email=?, password=?, account_used_to_login=?, acknowledgement=?, email_verification=?," +
@@ -24,14 +24,16 @@ const (
 func (user *User) Save() *rest_errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
+		logger.Info(err.Error())
 		return rest_errors.NewInternalServerError("database error")
 	}
 	defer stmt.Close()
 	user.Id = GenerateUuid()
 	go user.SendVerificationEmail()
-	_, saveErr := stmt.Exec(user.Id, user.FirstName, user.LastName, user.OverEighteen, user.Email, user.Password, user.AccountUsedToLogin, user.Acknowledgement,
+	_, saveErr := stmt.Exec(user.Id, user.FirstName, user.LastName, user.OverEighteen, user.Email, user.Password, user.ProfileImage, user.AccountUsedToLogin, user.Acknowledgement,
 		user.EmailVerification, user.PreviousLogin, user.PreviousPasswords[0], user.PreviousPasswords[1], user.PreviousPasswords[2], user.DateCreated, user.AccessToken)
 	if saveErr != nil {
+		logger.Info(saveErr.Error())
 		return rest_errors.NewInternalServerError("database error")
 	}
 	return nil
