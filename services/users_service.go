@@ -55,7 +55,7 @@ func (s *usersService) Login(user users.User) (*users.User, *rest_errors.RestErr
 		return nil, err
 	}
 	if current.EmailVerification {
-		token, err := user.GenerateJWT()
+		token, err := current.GenerateJWT()
 		if err != nil {
 			return nil, rest_errors.NewInternalServerError("error while generating token")
 		}
