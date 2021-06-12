@@ -114,7 +114,20 @@ func (user *User) RegisterValidate() *rest_errors.RestErr {
 	if user.OverEighteen == false {
 		return rest_errors.NewInvalidInputError("Must be over eighteen years")
 	}
+	if user.FirstName == "" {
+		return rest_errors.NewInvalidInputError("Please enter the first name")
+	}
+	if user.LastName == "" {
+		return rest_errors.NewInvalidInputError("Please enter the last name")
+	}
 	return nil
+}
+func (user *User) LoginAuthentication(password string) *rest_errors.RestErr {
+	if user.Password == crypto_utils.GetMd5(password) {
+		return nil
+	}
+	return rest_errors.NewInvalidInputError("Please provide valid password")
+
 }
 
 func GenerateUuid() string {
@@ -132,11 +145,6 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 	subject := "verification"
 	plainText := "Please click below link to verify\nhttps://fast-bastion-03217.herokuapp.com/users/verifyemail/" + token
 	client := sendgrid.NewSendClient(os.Getenv("sgapikey"))
-	//hostUrl := "smtp.gmail.com"
-	//hostPort := "587"
-	//emailSender := senderEmail
-	//password := password
-	//emailReceiever := user.Email
 	message := mail.NewSingleEmail(from, subject, to, plainText, "")
 	response, err := client.Send(message)
 	if err != nil {
@@ -146,27 +154,6 @@ func (user *User) SendVerificationEmail() *rest_errors.RestErr {
 	logger.Info(fmt.Sprintf("%d", response.StatusCode))
 	logger.Info("sent")
 
-	//emailAuth := smtp.PlainAuth(
-	//	"",
-	//	emailSender,
-	//	password,
-	//	hostUrl,
-	//)
-	//logger.Info("authorized")
-	//msg := []byte("To: " + emailReceiever + "\r\n" +
-	//	"Subject: " + "Hello" + "\r\n" + "Please click below link to verify\nhttps://fast-bastion-03217.herokuapp.com/users/verifyemail/" + token)
-	//
-	//err = smtp.SendMail(
-	//	hostUrl+":"+hostPort,
-	//	emailAuth,
-	//	emailSender,
-	//	[]string{emailReceiever},
-	//	msg)
-	//logger.Info("sent")
-	//if err != nil {
-	//	return rest_errors.NewInvalidInputError("invalid email")
-	//}
-	//logger.Info("sent")
 	return nil
 
 }

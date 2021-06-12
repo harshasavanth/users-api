@@ -9,6 +9,7 @@ func mapUrls() {
 	router.GET("/ping", ping.Ping)
 
 	router.POST("/register", users.UsersController.Create)
+	router.POST("/login", users.UsersController.Login)
 	router.GET("/users/:user_id", users.UsersController.IsAuthorized(users.UsersController.Get))
 	router.PUT("/update/:user_id", users.UsersController.IsAuthorized(users.UsersController.Update))
 	router.DELETE("/delete/:user_id", users.UsersController.IsAuthorized(users.UsersController.Delete))

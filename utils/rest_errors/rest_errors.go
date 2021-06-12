@@ -14,6 +14,13 @@ type RestErr struct {
 func NewBadRequestError(message string) *RestErr {
 	return &RestErr{
 		Message: message,
+		Status:  http.StatusUnauthorized,
+		Error:   "bad_request",
+	}
+}
+func NewNotAuthorizedError(message string) *RestErr {
+	return &RestErr{
+		Message: message,
 		Status:  http.StatusBadRequest,
 		Error:   "bad_request",
 	}

@@ -11,7 +11,6 @@ import (
 	"github.com/harshasavanth/users-api/utils/aws"
 	"github.com/harshasavanth/users-api/utils/crypto_utils"
 	"github.com/harshasavanth/users-api/utils/rest_errors"
-	"log"
 	"os"
 	"time"
 
@@ -24,6 +23,7 @@ var (
 
 type usersControllerInterface interface {
 	Create(*gin.Context)
+	Login(ctx *gin.Context)
 	Get(c *gin.Context)
 	Update(ctx *gin.Context)
 	Delete(ctx *gin.Context)
@@ -38,14 +38,28 @@ type usersController struct {
 
 func (c *usersController) Create(ctx *gin.Context) {
 	var user users.User
-
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		restErr := rest_errors.NewBadRequestError("invalid JSON bodysfds")
+		restErr := rest_errors.NewBadRequestError("invalid JSON body")
+		ctx.JSON(restErr.Status, restErr)
+		return
+	}
+	result, saveErr := services.UsersService.CreateUser(user)
+	if saveErr != nil {
+		ctx.JSON(saveErr.Status, saveErr)
+		return
+	}
+	ctx.JSON(http.StatusCreated, result)
+}
+
+func (c *usersController) Login(ctx *gin.Context) {
+	var user users.User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		restErr := rest_errors.NewBadRequestError("invalid JSON body")
 		ctx.JSON(restErr.Status, restErr)
 		return
 	}
 
-	result, saveErr := services.UsersService.CreateUser(user)
+	result, saveErr := services.UsersService.Login(user)
 	if saveErr != nil {
 		ctx.JSON(saveErr.Status, saveErr)
 		return
@@ -68,8 +82,8 @@ func (c *usersController) ProfilePicUpload(ctx *gin.Context) {
 	fileHeader, _ := ctx.FormFile("path")
 	file, err := fileHeader.Open()
 	if err != nil {
-		log.Println(err)
-
+		restErr := rest_errors.NewBadRequestError("Unable to open pic")
+		ctx.JSON(restErr.Status, restErr)
 		return
 	}
 	userid := ctx.GetHeader("ID")
@@ -79,7 +93,6 @@ func (c *usersController) ProfilePicUpload(ctx *gin.Context) {
 		ctx.JSON(restErr.Status, restErr)
 		return
 	}
-
 	user, getErr := services.UsersService.UpdateProfilePic(userid, path)
 	if getErr != nil {
 		ctx.JSON(getErr.Status, getErr)
@@ -90,10 +103,6 @@ func (c *usersController) ProfilePicUpload(ctx *gin.Context) {
 }
 
 func (c *usersController) GetByEmail(ctx *gin.Context) {
-	//if err := oauth.AuthenticateRequest(c.Request); err != nil {
-	//	c.JSON(err.Status, err)
-	//	return
-	//}
 	userId := ctx.Param("email")
 	user, getErr := services.UsersService.GetUser(userId)
 	if getErr != nil {
@@ -139,8 +148,8 @@ func (c *usersController) VerifyEmail(ctx *gin.Context) {
 		ctx.JSON(err.Status, err)
 		return
 	}
-
 	user.Id = did
+	logger.Info(user.Id)
 	result, verErr := services.UsersService.VerifyEmail(user)
 	if verErr != nil {
 		ctx.JSON(verErr.Status, verErr)
@@ -160,11 +169,10 @@ func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.Handle
 				return signingKey, nil
 			})
 			if err != nil {
-				err := rest_errors.NewBadRequestError("not authorized")
+				err := rest_errors.NewNotAuthorizedError("not authorized")
 				c.JSON(err.Status, err)
 				return
 			}
-
 			if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 				var tm time.Time
 				switch iat := claims["expires"].(type) {
@@ -174,8 +182,12 @@ func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.Handle
 					v, _ := iat.Int64()
 					tm = time.Unix(v, 0)
 				}
+				logger.Info(fmt.Sprintf("%s", tm))
+				logger.Info(fmt.Sprintf("%s", time.Now()))
+				logger.Info(fmt.Sprintf("%s", tm.Before(time.Now())))
+
 				if tm.Before(time.Now()) {
-					err := rest_errors.NewBadRequestError("token expired")
+					err := rest_errors.NewNotAuthorizedError("token expired")
 					c.JSON(err.Status, err)
 					return
 				} else {
@@ -184,19 +196,16 @@ func (con *usersController) IsAuthorized(endpoint func(*gin.Context)) gin.Handle
 					endpoint(&*c)
 				}
 			} else {
-				err := rest_errors.NewBadRequestError("invalid token")
+				err := rest_errors.NewNotAuthorizedError("invalid token")
 				c.JSON(err.Status, err)
 				return
 			}
-
 		} else {
-			err := rest_errors.NewBadRequestError("not authorized")
+			err := rest_errors.NewNotAuthorizedError("not authorized")
 			c.JSON(err.Status, err)
 			return
 		}
-
 	}
-
 }
 
 func (c *usersController) Display(ctx *gin.Context, id string, user *users.User) {

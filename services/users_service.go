@@ -1,10 +1,12 @@
 package services
 
 import (
+	"github.com/harshasavanth/bookstore_users-api/logger"
 	"github.com/harshasavanth/users-api/domain/users"
 	"github.com/harshasavanth/users-api/utils/crypto_utils"
 	"github.com/harshasavanth/users-api/utils/date_utils"
 	"github.com/harshasavanth/users-api/utils/rest_errors"
+	"net/http"
 )
 
 var (
@@ -15,6 +17,7 @@ type usersService struct {
 }
 type usersServiceInterface interface {
 	CreateUser(users.User) (*users.User, *rest_errors.RestErr)
+	Login(users.User) (*users.User, *rest_errors.RestErr)
 	GetUser(string) (*users.User, *rest_errors.RestErr)
 	GetUserByEmail(string) (*users.User, *rest_errors.RestErr)
 	UpdateUser(users.User) (*users.User, *rest_errors.RestErr)
@@ -24,9 +27,15 @@ type usersServiceInterface interface {
 }
 
 func (s *usersService) CreateUser(user users.User) (*users.User, *rest_errors.RestErr) {
+	exists := users.User{Email: user.Email}
+
+	if exists.GetByEmail() == nil {
+		return nil, rest_errors.NewInvalidInputError("user already exists")
+	}
 	if err := user.RegisterValidate(); err != nil {
 		return nil, err
 	}
+	user.ProfileImage = ""
 	user.DateCreated = date_utils.GetNowDBFormat()
 	user.Password = crypto_utils.GetMd5(user.Password)
 
@@ -34,6 +43,29 @@ func (s *usersService) CreateUser(user users.User) (*users.User, *rest_errors.Re
 		return nil, err
 	}
 	return &user, nil
+}
+func (s *usersService) Login(user users.User) (*users.User, *rest_errors.RestErr) {
+	current := &users.User{Email: user.Email}
+	if err := current.GetByEmail(); err != nil {
+		if err.Status == http.StatusInternalServerError {
+			return nil, err
+		}
+		return nil, rest_errors.NewInvalidInputError("enter valid email")
+	}
+	if err := current.LoginAuthentication(user.Password); err != nil {
+		return nil, err
+	}
+	if current.EmailVerification {
+		token, err := user.GenerateJWT()
+		if err != nil {
+			return nil, rest_errors.NewInternalServerError("error while generating token")
+		}
+		logger.Info("email verified")
+		current.AccessToken = token
+	}
+
+	logger.Info(current.AccessToken)
+	return current, nil
 }
 
 func (s *usersService) GetUser(userId string) (*users.User, *rest_errors.RestErr) {
@@ -46,7 +78,7 @@ func (s *usersService) GetUser(userId string) (*users.User, *rest_errors.RestErr
 
 func (s *usersService) GetUserByEmail(email string) (*users.User, *rest_errors.RestErr) {
 	result := &users.User{Email: email}
-	if err := result.Get(); err != nil {
+	if err := result.GetByEmail(); err != nil {
 		return nil, err
 	}
 	return result, nil
@@ -97,7 +129,6 @@ func (s *usersService) VerifyEmail(user users.User) (*users.User, *rest_errors.R
 		err = rest_errors.NewInternalServerError("cannot find user")
 		return nil, err
 	}
-
 	current.EmailVerification = true
 	accessToken, err := current.GenerateJWT()
 	if err != nil {
